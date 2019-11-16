@@ -5,7 +5,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * This class implements PageRank algorithm on simple graph structure.
@@ -22,11 +22,12 @@ public class PageRanker {
 	 * Where pid_1, pid_2, ..., pid_n are the page IDs of the page having links to page pid_1. 
 	 * You can assume that a page ID is an integer.
 	 */
+	BufferedReader input;
 	public void loadData(String inputLinkFilename){
 		File inputFile = new File(inputLinkFilename);
 		try {
-			BufferedReader input = new BufferedReader(new FileReader(inputFile));
-		} catch (FileNotFoundException e) {
+			 input = new BufferedReader(new FileReader(inputFile));
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -36,7 +37,44 @@ public class PageRanker {
 	 * This method initialize the parameters for the PageRank algorithm including
 	 * setting an initial weight to each page.
 	 */
-	public void initialize(){}
+	HashSet<Integer> P = new HashSet<>();
+	HashSet<Integer> S;
+	HashMap<Integer, TreeSet> M = new HashMap<>();
+	HashMap<Integer, Integer> L = new HashMap<>();
+	HashMap<Integer, Double> PR = new HashMap<>();
+	double d;
+	public void initialize(){
+		d =0.85;
+		String in;
+		HashSet<Integer> s = new HashSet<>();
+		try {
+			while ((in = input.readLine()) != null) {
+				String[] split = in.split(" ");
+				int page = Integer.parseInt(split[0]);
+				P.add(page);
+				TreeSet<Integer> m = new TreeSet<>();
+				for (int i = 1; i < split.length; i++) {
+					int num = Integer.parseInt(split[i]);
+					s.add(num);
+					m.add(num);
+					if (L.containsKey(num)) {
+						L.replace(num, L.get(num) + 1);
+					} else {
+						L.put(num, 1);
+					}
+				}
+				M.put(page, m);
+			}
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
+		S = P;
+		S.removeAll(s);
+		for (int id : P) {
+			PR.put(id, (double) (1 / P.size()));
+		}
+	}
 	
 	/**
 	 * Computes the perplexity of the current state of the graph. The definition
