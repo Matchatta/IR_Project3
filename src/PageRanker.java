@@ -1,6 +1,10 @@
 //Name(s):
 //ID
 //Section
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.Arrays;
 
 /**
@@ -18,7 +22,14 @@ public class PageRanker {
 	 * Where pid_1, pid_2, ..., pid_n are the page IDs of the page having links to page pid_1. 
 	 * You can assume that a page ID is an integer.
 	 */
-	public void loadData(String inputLinkFilename){}
+	public void loadData(String inputLinkFilename){
+		File inputFile = new File(inputLinkFilename);
+		try {
+			BufferedReader input = new BufferedReader(new FileReader(inputFile));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * This method will be called after the graph is loaded into the memory.
