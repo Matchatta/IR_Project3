@@ -96,7 +96,8 @@ public class PageRanker {
 	public boolean isConverge(){
 	    double perplexity = getPerplexity();
 	    double unit = Math.floor(this.perplexity)-Math.floor(perplexity);
-	    if(iteration==4){
+	    if(iteration>=3){
+	    	this.perplexity = perplexity;
             return true;
         }
 	    else if(unit==0){
@@ -141,46 +142,44 @@ public class PageRanker {
 	 */
 	public void runPageRank(String perplexityOutFilename, String prOutFilename){
 		try{
-			int inte = 0;
-			FileWriter filePerplexity = new FileWriter(perplexityOutFilename);
-			PrintWriter PrintPerplexity = new PrintWriter(filePerplexity);
-			FileWriter filePageRank = new FileWriter(prOutFilename);
-			PrintWriter PageRankWriter = new PrintWriter(filePageRank);
-			while (!isConverge()){
-				double sinkPR = 0;
+			FileWriter perplexityFile = new FileWriter(perplexityOutFilename);
+			PrintWriter writePerplexity = new PrintWriter(perplexityFile);
+			FileWriter prFile = new FileWriter(prOutFilename);
+			PrintWriter writePR = new PrintWriter(prFile);
+			int inter =0;
+			while(!isConverge()){
+				double sinkPR=0;
+				HashMap<Integer, Double> newPR = new HashMap<>();
 				for(int p : S){
-					sinkPR += PR.get(p);
+					sinkPR+=PR.get(p);
 				}
-				TreeMap<Integer, Double> newPr = new TreeMap<>();
-				for(int p: P){
-					double value = (1-d)/P.size();
-					value += (d*sinkPR/P.size());
-					if(M.containsKey(p)) {
-						for (int q : M.get(p)) {
-							value+=(d*PR.get(q)/L.get(q));
+				for(int p : P){
+					double newPR_value = (1-d)/P.size();
+					newPR_value+= d*sinkPR/P.size();
+					if(M.containsKey(p)){
+						for(int q : M.get(p)){
+							newPR_value+=d*PR.get(q)/L.get(q).doubleValue();
 						}
 					}
-					newPr.put(p, value);
+					newPR.put(p, newPR_value);
 				}
-				for (int p : P){
-					PR.replace(p, newPr.get(p));
+				PR.putAll(newPR);
+				if(inter>0){
+					writePerplexity.println(this.perplexity);
 				}
-				if(inte>0) {
-					PrintPerplexity.println(perplexity);
-				}
-				inte++;
+				inter++;
 			}
-			for (int p: P) {
-				PageRankWriter.print(p+" ");
-				PageRankWriter.println(PR.get(p));
+			for(int p : P){
+				writePR.println(p+" "+PR.get(p));
 			}
-			PageRankWriter.close();
-			PrintPerplexity.close();
+			writePerplexity.println(this.perplexity);
+			writePerplexity.close();
+			writePR.close();
 		}
 		catch (Exception e){
 			e.printStackTrace();
 		}
-    }
+	}
 	/**
 	 * Return the top K page IDs, whose scores are highest.
 	 */
@@ -200,10 +199,10 @@ public class PageRanker {
 	{
 	long startTime = System.currentTimeMillis();
 		PageRanker pageRanker =  new PageRanker();
-		pageRanker.loadData("citeseer.dat");
+		pageRanker.loadData("test.dat");
 		pageRanker.initialize();
 		pageRanker.runPageRank("perplexity.out", "pr_scores.out");
-		Integer[] rankedPages = pageRanker.getRankedPages(100);
+		Integer[] rankedPages = pageRanker.getRankedPages(6);
 	double estimatedTime = (double)(System.currentTimeMillis() - startTime)/1000.0;
 
 		System.out.println("Top 100 Pages are:\n"+Arrays.toString(rankedPages));
